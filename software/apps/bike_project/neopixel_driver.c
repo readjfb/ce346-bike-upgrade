@@ -9,7 +9,7 @@
 static const nrfx_pwm_t PWM_INST = NRFX_PWM_INSTANCE(0);
 
 // Holds duty cycle values to trigger PWM toggle
-nrf_pwm_values_common_t pwm_bits[1] = {0};
+nrf_pwm_values_common_t pwm_bits[1] = {6};
 
 // create three arrays to hold the RGB values for each LED
 uint8_t neopixel_driver_red[NEOPIXEL_DRIVER_NUM_LEDS];
@@ -28,6 +28,7 @@ static void pwm_init(void)
     config.output_pins[1] = NRFX_PWM_PIN_NOT_USED;
     config.output_pins[2] = NRFX_PWM_PIN_NOT_USED;
     config.output_pins[3] = NRFX_PWM_PIN_NOT_USED;
+
     // set clock to be as fast as possible
     config.base_clock = NRF_PWM_CLK_16MHz;
     config.count_mode = NRF_PWM_MODE_UP;
@@ -35,6 +36,9 @@ static void pwm_init(void)
     config.load_mode = NRF_PWM_LOAD_COMMON;
     config.step_mode = NRF_PWM_STEP_AUTO;
     nrfx_pwm_init(&PWM_INST, &config, NULL);
+
+    // use NRFX_PWM_PIN_INVERTED to invert the output
+
 
     // clock is 16 MHz, so 1/16 MHz = 62.5 ns
     // Each click of the counter is 62.5 ns
@@ -93,7 +97,7 @@ void neopixel_driver_send(void) {
     int bit_index = 0;
     for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS * 3; i++) {
         // iterate over the bits in the byte
-        for (int j = 0; j < 8; j++) {
+        for (int j = 7; j >= 0; j--) {
             // if the bit is 1, send a 1 for 900 ns
             if (buffer[i] & (1 << j)) {
                 pwm_bits[bit_index] = 15;

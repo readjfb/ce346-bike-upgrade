@@ -15,7 +15,7 @@ int main(void)
 
     neopixel_driver_init();
 
-    neopixel_driver_set_all(100, 0, 0);
+    neopixel_driver_set_all(1, 1, 1);
 
     neopixel_driver_send();
 }
