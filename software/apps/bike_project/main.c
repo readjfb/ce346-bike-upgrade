@@ -5,12 +5,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 
+#include "nrf_delay.h"
+#include "nrf_twi_mngr.h"
 #include "microbit_v2.h"
-#include "neopixel_driver.h"
+// #include "neopixel_driver.h"
+// #include "screen_driver.h"
 
 int main(void)
 {
+    printf("\n");
     printf("Board started!\n");
 
     neopixel_driver_init();
@@ -18,4 +23,12 @@ int main(void)
     neopixel_driver_set_all(1, 1, 1);
 
     neopixel_driver_send();
+
+    // screen_init();
+
+    while (1) {
+        // Do nothing.
+    }
+
+    // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
 }
