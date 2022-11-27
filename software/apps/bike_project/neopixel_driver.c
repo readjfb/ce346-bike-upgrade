@@ -6,10 +6,34 @@
 
 #include "microbit_v2.h"
 
-static const nrfx_pwm_t PWM_INST = NRFX_PWM_INSTANCE(0);
+// https://github.com/NordicPlayground/nrf52-ble-multi-link-multi-role/tree/master/common/drv_ws2812
+
+static nrfx_pwm_t PWM_INST = NRFX_PWM_INSTANCE(0);
 
 // Holds duty cycle values to trigger PWM toggle
-nrf_pwm_values_common_t pwm_bits[1] = {6};
+nrf_pwm_values_individual_t pwm_duty_cycle_values[NEOPIXEL_DRIVER_NUM_BITS] = {6 | (1 << 15)};
+
+volatile bool pwm_done = true;
+
+void pwm_handler(nrfx_pwm_evt_type_t event_type)
+{
+    switch (event_type)
+    {
+    case NRFX_PWM_EVT_FINISHED:
+        pwm_done = true;
+        break;
+    default:
+        break;
+    }
+}
+
+static nrf_pwm_sequence_t pwm_sequence =
+{
+    .values.p_individual = pwm_duty_cycle_values,
+    .length = (sizeof(pwm_duty_cycle_values) / sizeof(uint16_t)),
+    .repeats = 0,
+    .end_delay = 0
+};
 
 // create three arrays to hold the RGB values for each LED
 uint8_t neopixel_driver_red[NEOPIXEL_DRIVER_NUM_LEDS];
@@ -18,24 +42,22 @@ uint8_t neopixel_driver_blue[NEOPIXEL_DRIVER_NUM_LEDS];
 
 static void pwm_init(void)
 {
+    // https://github.com/NordicPlayground/nrf52-ble-multi-link-multi-role/blob/master/common/drv_ws2812/drv_ws2812.c
     // Initialize the PWM
     // SPEAKER_OUT is the output pin, mark the others as NRFX_PWM_PIN_NOT_USED
-    // Set the clock to 500 kHz, count mode to Up, and load mode to Common
-    // The Countertop value doesn't matter for now. We'll set it in play_tone()
-    // TODO
-    nrfx_pwm_config_t config;
-    config.output_pins[0] = NEOPIXEL_DRIVER_PIN;
-    config.output_pins[1] = NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[2] = NRFX_PWM_PIN_NOT_USED;
-    config.output_pins[3] = NRFX_PWM_PIN_NOT_USED;
 
-    // set clock to be as fast as possible
-    config.base_clock = NRF_PWM_CLK_16MHz;
-    config.count_mode = NRF_PWM_MODE_UP;
-    config.top_value = 20;
-    config.load_mode = NRF_PWM_LOAD_COMMON;
-    config.step_mode = NRF_PWM_STEP_AUTO;
-    nrfx_pwm_init(&PWM_INST, &config, NULL);
+    nrfx_pwm_config_t pwm_config = NRFX_PWM_DEFAULT_CONFIG;
+    pwm_config.output_pins[0] = NRFX_PWM_PIN_NOT_USED;
+    pwm_config.output_pins[1] = NEOPIXEL_DRIVER_PIN;
+    // pwm_config.output_pins[1] = NEOPIXEL_DRIVER_PIN;
+    pwm_config.output_pins[2] = NRFX_PWM_PIN_NOT_USED;
+    pwm_config.output_pins[3] = NRFX_PWM_PIN_NOT_USED;
+    pwm_config.load_mode = NRF_PWM_LOAD_INDIVIDUAL;
+    // WS2812 protocol requires a 800 kHz PWM frequency. PWM Top value = 20 and Base Clock = 16 MHz achieves this
+    pwm_config.top_value = 20;
+    pwm_config.base_clock = NRF_PWM_CLK_16MHz;
+
+    nrfx_pwm_init(&PWM_INST, &pwm_config, pwm_handler);
 
     // use NRFX_PWM_PIN_INVERTED to invert the output
 
@@ -47,6 +69,10 @@ static void pwm_init(void)
 
 // initialize the rgb arrays to empty
 void neopixel_driver_init(void) {
+    memset(neopixel_driver_red, 0, sizeof(neopixel_driver_red));
+    memset(neopixel_driver_green, 0, sizeof(neopixel_driver_green));
+    memset(neopixel_driver_blue, 0, sizeof(neopixel_driver_blue));
+
     pwm_init();
 
     neopixel_driver_set_all(0, 0, 0);
@@ -70,13 +96,13 @@ void neopixel_driver_set_all(uint8_t red, uint8_t green, uint8_t blue) {
     }
 }
 
-// Sends the RGB values to the LEDs
-void neopixel_driver_send(void) {
-    // First, create a buffer to hold the data to send
-    uint8_t buffer[NEOPIXEL_DRIVER_NUM_BYTES];
+static void convert_rgb_to_pwm_sequence(void)
+{
+    uint8_t buffer[NEOPIXEL_DRIVER_NUM_LEDS * 3];
 
     // Next, fill the buffer with the data to send
-    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS; i++) {
+    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS; i++)
+    {
         buffer[i * 3] = neopixel_driver_green[i];
         buffer[i * 3 + 1] = neopixel_driver_red[i];
         buffer[i * 3 + 2] = neopixel_driver_blue[i];
@@ -95,27 +121,42 @@ void neopixel_driver_send(void) {
 
     // iterate over the buffer
     int bit_index = 0;
-    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS * 3; i++) {
+    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS * 3; i++)
+    {
         // iterate over the bits in the byte
-        for (int j = 7; j >= 0; j--) {
+        for (int bit = 7; bit >= 0; bit--)
+        {
             // if the bit is 1, send a 1 for 900 ns
-            if (buffer[i] & (1 << j)) {
-                pwm_bits[bit_index] = 15;
+            uint8_t b = (buffer[i] >> bit) & 0x01;
+            uint16_t pwm = 0;
+
+            if (b == 1)
+            {
+                pwm = PWM_LOGIC_HIGH;
             }
             // else send a 1 for 350 ns
-            else {
-                pwm_bits[bit_index] = 6;
+            else
+            {
+                pwm = PWM_LOGIC_LOW;
             }
-            bit_index++;
+            pwm_duty_cycle_values[bit_index++].channel_1 = pwm;
         }
     }
+}
 
-    nrf_pwm_sequence_t pwm_sequence = {
-        .values.p_common = pwm_bits,
-        .length = NEOPIXEL_DRIVER_NUM_BITS,
-        .repeats = 0,
-        .end_delay = 0,
-    };
+// Sends the RGB values to the LEDs
+void neopixel_driver_send(void) {
+    convert_rgb_to_pwm_sequence();
 
-    nrfx_pwm_simple_playback(&PWM_INST, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
+    if (!pwm_done)
+    {
+        return;
+    }
+
+    pwm_done = false;
+    uint32_t err_code = nrfx_pwm_simple_playback(&PWM_INST, &pwm_sequence, 1, NRFX_PWM_FLAG_STOP);
+
+    printf("err_code: %d\n", err_code);
+
+    return;
 }
