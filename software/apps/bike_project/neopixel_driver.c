@@ -121,8 +121,15 @@ static void convert_rgb_to_pwm_sequence(void)
 
     // iterate over the buffer
     int bit_index = 0;
-    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS * 3; i++)
+    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_BYTES; i++)
+    // for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS * 3; i++)
     {
+        // if the byte is in range of the number of LEDs, then send the data
+        // otherwise, send LOW for the remaining bytes
+        if (i >= NEOPIXEL_DRIVER_NUM_LEDS * 3) {
+            continue;
+        }
+
         // iterate over the bits in the byte
         for (int bit = 7; bit >= 0; bit--)
         {

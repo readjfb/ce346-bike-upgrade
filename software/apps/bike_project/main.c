@@ -30,7 +30,7 @@ int main(void)
 
     while (1) {
         // Do nothing.
-        // neopixel_driver_send();
+        neopixel_driver_send();
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400

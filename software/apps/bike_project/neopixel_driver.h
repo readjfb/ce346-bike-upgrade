@@ -3,11 +3,12 @@
 #include "nrf.h"
 #include "microbit_v2.h"
 
-# define NEOPIXEL_DRIVER_PIN  EDGE_P13
+# define NEOPIXEL_DRIVER_PIN  13
 
 # define NEOPIXEL_DRIVER_NUM_LEDS  16
 
-# define NEOPIXEL_DRIVER_NUM_BYTES  (NEOPIXEL_DRIVER_NUM_LEDS * 3)
+# define NEOPIXEL_DRIVER_NUM_BYTES  (NEOPIXEL_DRIVER_NUM_LEDS * 3) + 1000
+// just pad a lot of bytes to the end of the buffer
 # define NEOPIXEL_DRIVER_NUM_BITS  (NEOPIXEL_DRIVER_NUM_BYTES * 8)
 
 // inits are in nano seconds
