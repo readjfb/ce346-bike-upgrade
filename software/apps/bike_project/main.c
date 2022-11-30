@@ -10,8 +10,12 @@
 #include "nrf_delay.h"
 #include "nrf_twi_mngr.h"
 #include "microbit_v2.h"
+
 #include "neopixel_driver.h"
+
 // #include "screen_driver.h"
+
+#include "basic_timing.h"
 
 static void neopixel_demo(void)
 {
@@ -34,15 +38,21 @@ int main(void)
     // NEOPIXEL INITIALIZATION STARTS HERE
     neopixel_driver_init();
 
+    timing_init();
+
     printf("Neopixels Done!\n");
 
     // screen_init();
 
     while (1) {
         // Do nothing.
-        neopixel_demo();
+        // neopixel_demo();
 
+        float velocity = get_velocity();
 
+        // set the neopixels to the current velocity
+        neopixel_driver_set_all(0, 0, 0);
+        neopixel_driver_set_range(0, 0, 20, 20, 20);
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
