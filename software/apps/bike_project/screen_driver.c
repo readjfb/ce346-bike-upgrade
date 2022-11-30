@@ -18,9 +18,11 @@
 
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 1, 0);
 
+static nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
+
 // initialize the I2C bus
 static void initialize_i2c(void) {
-    nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
+    // i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
     i2c_config.scl = EDGE_P19;
     i2c_config.sda = EDGE_P20;
     i2c_config.frequency = NRF_TWIM_FREQ_400K;

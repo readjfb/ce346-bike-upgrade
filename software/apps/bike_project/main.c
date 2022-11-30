@@ -11,7 +11,7 @@
 #include "nrf_twi_mngr.h"
 #include "microbit_v2.h"
 #include "neopixel_driver.h"
-// #include "screen_driver.h"
+#include "screen_driver.h"
 
 static void neopixel_demo(void)
 {
@@ -36,11 +36,14 @@ int main(void)
 
     printf("Neopixels Done!\n");
 
-    // screen_init();
+    // SCREEN INITIALIZATION STARTS HERE
+    screen_init();
+    // clear_screen();
+    // set_screen_solid();
 
     while (1) {
         // Do nothing.
-        neopixel_demo();
+        // neopixel_demo();
 
 
     }

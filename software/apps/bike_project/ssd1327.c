@@ -11,7 +11,7 @@
 
 APP_TIMER_DEF(update_timer);
 
-static const nrf_twi_mngr_t *i2c_manager = NULL;
+static nrf_twi_mngr_t *i2c_manager = NULL;
 
 // Helper function to perform a 1-byte I2C read of a given register
 //
@@ -59,6 +59,9 @@ static void i2c_write(uint8_t i2c_addr, uint8_t *data, uint8_t len)
     if (result != NRF_SUCCESS) {
         printf("i2c_write failed: %d\n", result);
     }
+    else {
+        printf("i2c_write succeeded\n");
+    }
 }
 
 static uint8_t format_first_byte(uint8_t i2c_addr, bool sa0, bool rw)
@@ -82,27 +85,21 @@ static uint8_t format_first_byte(uint8_t i2c_addr, bool sa0, bool rw)
 
 static void send_1b_cmd(uint8_t cmd)
 {
-    // uint8_t first_byte = format_first_byte(SSD1327_I2C_ADDR, 0, 0);
-
-    // first_byte = SSD1327_I2C_ADDR;
-
-    // printf("I2C ADDR: %x\n", SSD1327_I2C_ADDR);
-
-    // // print first byte
-    // printf("first byte: %x\n", first_byte);
-
-    // first byte, command inducer (0x00), command
-
+    // Send slave address with SA0=0 for command mode and R/W=0 for write
+    // then send the control byte with Co=0 for command mode and D/C#=0 for data
     uint8_t data[2] = {0x00, cmd};
     i2c_write(SSD1327_I2C_ADDR_CMD, data, 2);
 }
 
 static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
-    // uint8_t first_byte = format_first_byte(SSD1327_I2C_ADDR, 0, 0);
+    // This sends a 2b command
+    // First sends the control byte (Co D/C# 00000) with Co=1 for continutation mode and D/C#=0 for command
+    // Then the command byte is sent
 
-    uint8_t data[4] = {0x00, cmd0, cmd1};
+    // The external i2c address should be sent first, as 011110 SAO R/W with SAO=0 for command mode and R/W=0 for write
+    // TODO: does this work?
+    uint8_t data[3] = {0x80, cmd0, cmd1};
     i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
-
 }
 
 // Initialize the SSD1327 display
