@@ -76,6 +76,8 @@ void neopixel_driver_init(void) {
     pwm_init();
 
     neopixel_driver_set_all(0, 0, 0);
+
+    neopixel_driver_send();
 }
 
 // create a function to set the RGB values for a single LED
@@ -166,4 +168,27 @@ void neopixel_driver_send(void) {
     printf("err_code: %d\n", err_code);
 
     return;
+}
+
+void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue) {
+    if (start > end) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start > end\n");
+        return;
+    }
+    if (start < 0) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start < 0\n");
+    }
+    if (end > NEOPIXEL_DRIVER_NUM_LEDS) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: end > NEOPIXEL_DRIVER_NUM_LEDS\n");
+    }
+
+    for (int i = start; i <= end; i++) {
+        neopixel_driver_set_led(i, red, green, blue);
+    }
+
+    for (int i = start; i < end; i++) {
+        neopixel_driver_red[i] = red;
+        neopixel_driver_green[i] = green;
+        neopixel_driver_blue[i] = blue;
+    }
 }

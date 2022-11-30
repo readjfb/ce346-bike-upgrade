@@ -3,11 +3,12 @@
 #include "nrf.h"
 #include "microbit_v2.h"
 
-# define NEOPIXEL_DRIVER_PIN  13
+# define NEOPIXEL_DRIVER_PIN  EDGE_P13
+// # define NEOPIXEL_DRIVER_PIN  13
 
-# define NEOPIXEL_DRIVER_NUM_LEDS  16
+# define NEOPIXEL_DRIVER_NUM_LEDS  24
 
-# define NEOPIXEL_DRIVER_NUM_BYTES  (NEOPIXEL_DRIVER_NUM_LEDS * 3) + 1000
+# define NEOPIXEL_DRIVER_NUM_BYTES  (NEOPIXEL_DRIVER_NUM_LEDS * 3) + 200
 // just pad a lot of bytes to the end of the buffer
 # define NEOPIXEL_DRIVER_NUM_BITS  (NEOPIXEL_DRIVER_NUM_BYTES * 8)
 
@@ -32,3 +33,5 @@ void neopixel_driver_set_all(uint8_t red, uint8_t green, uint8_t blue);
 // Sends the RGB values to the LEDs
 void neopixel_driver_send(void);
 
+// Sets color for a range of consecutive LEDs (inclusive)
+void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue);
