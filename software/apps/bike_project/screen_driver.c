@@ -37,6 +37,14 @@ static void initialize_display(const nrf_twi_mngr_t *i2c)
     ssd1327_init(i2c);
 }
 
+void clear_screen(void) {
+    ssd1327_clear();
+}
+
+void set_screen_solid(void) {
+    ssd1327_solid();
+}
+
 // initialization
 void screen_init(void)
 {

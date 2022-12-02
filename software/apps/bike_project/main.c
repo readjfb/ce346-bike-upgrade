@@ -38,14 +38,17 @@ int main(void)
 
     // SCREEN INITIALIZATION STARTS HERE
     screen_init();
-    // clear_screen();
-    // set_screen_solid();
 
     while (1) {
-        // Do nothing.
-        // neopixel_demo();
+        neopixel_demo();
 
+        set_screen_solid();
 
+        nrf_delay_ms(1000);
+
+        clear_screen();
+
+        nrf_delay_ms(1000);
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
