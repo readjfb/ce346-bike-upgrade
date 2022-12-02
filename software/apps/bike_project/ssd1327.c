@@ -13,6 +13,13 @@ APP_TIMER_DEF(update_timer);
 
 static nrf_twi_mngr_t *i2c_manager = NULL;
 
+static uint8_t ucBackBuffer[8192] = {0};
+
+static void set_row(uint8_t row_num) {
+    uint8_t ucCommand[2] = {0x75, 0x00, row_num};
+    ssd1327_write_command(ucCommand, 2);
+}
+
 // Helper function to perform a 1-byte I2C write
 static void i2c_write(uint8_t i2c_addr, uint8_t *data, uint8_t len)
 {
@@ -47,14 +54,36 @@ static uint8_t format_first_byte(uint8_t i2c_addr, bool sa0, bool rw)
     return first_byte;
 }
 
+static void send_data_bytes(uint8_t *data, uint8_t len) {
+    uint8_t buf[len+2];
+
+    buf[0] = 0x40;
+
+    int i = 1;
+    while (i < len+1) {
+        buf[i] = data[i-1];
+        i++;
+    }
+
+    i2c_write(SSD1327_I2C_ADDR_DATA, buf, len+1);
+}
+
+static void send_data_byte(uint8_t data) {
+    uint8_t buf[2];
+
+    buf[0] = 0x40;
+    buf[1] = data;
+
+    i2c_write(SSD1327_I2C_ADDR_DATA, buf, 2);
+}
+
+
 static void send_1b_cmd(uint8_t cmd)
 {
     // Send slave address with SA0=0 for command mode and R/W=0 for write
     // then send the control byte with Co=0 for command mode and D/C#=0 for data
     uint8_t data[2] = {0x00, cmd};
     i2c_write(SSD1327_I2C_ADDR_DATA, data, 2);
-    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 2); // We should be using the CMD but... nah
-
 }
 
 static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
@@ -66,7 +95,6 @@ static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
     // TODO: does this work?
     uint8_t data[3] = {0x00, cmd0, cmd1};
     i2c_write(SSD1327_I2C_ADDR_DATA, data, 3);
-    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
 }
 
 static void send_3b_cmd(uint8_t cmd0, uint8_t cmd1, uint8_t cmd2) {
@@ -78,7 +106,50 @@ static void send_3b_cmd(uint8_t cmd0, uint8_t cmd1, uint8_t cmd2) {
 
     uint8_t data[4] = {0x00, cmd0, cmd1, cmd2};
     i2c_write(SSD1327_I2C_ADDR_DATA, data, 4);
-    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 4);
+}
+
+static void ssd1327set_position(int x, int y, int cx, int cy)
+{
+    unsigned char buf[8];
+
+    buf[0] = 0x00;
+    buf[1] = 0x15;
+
+    buf[2] = x / 2;                         // start address
+    buf[3] = (uint8_t)(((x + cx) / 2) - 1); // end address
+    buf[4] = 0x75;                          // row start/end
+    buf[5] = y;                             // start row
+    buf[6] = y + cy - 1;                    // end row
+
+    i2c_write(SSD1327_I2C_ADDR_DATA, buf, 7);
+
+    // set display start line
+    send_2b_cmd(0xA1, 0x00);
+    send_2b_cmd(0xA2, 0x00);
+}
+
+static void test_pixel_write(void)
+{
+    ssd1327set_position(0, 0, 128, 128);
+    // Clear buffer
+    for (int i = 0; i < 8192; i++)
+    {
+        ucBackBuffer[i] = 0x00;
+    }
+
+    // set the first pixel to 0
+    ucBackBuffer[0] = 0x01;
+
+    // send data in blocks of 32 bytes
+    int blocksize = 192;
+
+    for (int i = 0; i < 8192 / blocksize; i++)
+    {
+        // Send the data
+        send_data_bytes(ucBackBuffer + (i*blocksize), blocksize);
+    }
+
+    // send_data_bytes(&ucBackBuffer, 4000);
 }
 
 // Initialize the SSD1327 display
@@ -95,9 +166,17 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     send_1b_cmd(0xAF);
     send_1b_cmd(0xA5);
 
+    // Remap with A0 and 0b0000 0000
+    send_2b_cmd(0xa0, 0x14);
+
+    // set multiplex ratio
+
     // sleep for 250ms, then turn screen off
     nrf_delay_ms(250);
     send_1b_cmd(0xA6);
+
+    // set to normal
+    send_1b_cmd(0xA4);
 
     // send_2b_cmd(0xFD, 0x12);    // Unlock controller
     // send_1b_cmd(0xA4);          // Set entire display off
@@ -112,13 +191,67 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     // send_1b_cmd(0xa6);           // Set normal display mode
 }
 
+static void total_screen_refresh(void)
+{
+    ssd1327set_position(0, 0, 128, 128);
+    // int block_size = 192;
+    int block_size = 200;
+
+    int top = (8192.0 / block_size) + .50001;
+
+    for (int i = 0; i < top; i++)
+    {
+        // if it's the last one, dont overflow
+        if (i == top - 1)
+        {
+            block_size = 8192 - (i * block_size) + 1;
+        }
+
+        send_data_bytes(ucBackBuffer + (i * block_size), block_size);
+    }
+}
+
 void ssd1327_clear(void) {
     // turns off all pixels
-    send_1b_cmd(0xA6);
+    // send_1b_cmd(0xA6);
+
+    // Clear buffer
+    for (int i = 0; i < 8192; i++)
+    {
+        ucBackBuffer[i] = 0x00;
+    }
+
+    total_screen_refresh();
 }
 
 void ssd1327_solid(void)
 {
     // turns on the display
-    send_1b_cmd(0xA5);
+    for (int i = 0; i < 8192; i++)
+    {
+        ucBackBuffer[i] = 0xFF;
+    }
+
+    total_screen_refresh();
+}
+
+void ssd1327_normal(void)
+{
+    // Test the display
+    send_1b_cmd(0xA4);
+}
+
+void ssd1327_gradient(void)
+{
+    float frac = 8.0 / 8192.0;
+    for (int i = 0; i < 8192; i++)
+    {
+        uint8_t val = (uint8_t)(frac * i);
+
+        ucBackBuffer[i] = val + (val << 4);
+
+        // ucBackBuffer[i] = 0x0f;
+    }
+
+    total_screen_refresh();
 }

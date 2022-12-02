@@ -13,17 +13,26 @@
 #include "neopixel_driver.h"
 #include "screen_driver.h"
 
+static int step = 0;
+
 static void neopixel_demo(void)
 {
-    neopixel_driver_set_all(0, 0, 0);
-    neopixel_driver_send();
-    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS; i++)
-    {
-        neopixel_driver_set_range(0, i, 20, 20, 20);
-        neopixel_driver_set_led(i, 50, 0, 0);
+
+    if (step == 0) {
+        neopixel_driver_set_all(0, 0, 0);
         neopixel_driver_send();
-        nrf_delay_ms(1000 / NEOPIXEL_DRIVER_NUM_LEDS);
+        step++;
+        return;
     }
+
+    neopixel_driver_set_range(0, step, 20, 20, 20);
+    neopixel_driver_set_led(step, 50, 0, 0);
+    neopixel_driver_send();
+    step++;
+    // nrf_delay_ms(1000 / NEOPIXEL_DRIVER_NUM_LEDS);
+
+    step = step % NEOPIXEL_DRIVER_NUM_LEDS;
+
 }
 
 int main(void)
@@ -42,13 +51,17 @@ int main(void)
     while (1) {
         neopixel_demo();
 
-        set_screen_solid();
+        // set_screen_solid();
 
-        nrf_delay_ms(1000);
+        // nrf_delay_ms(1000);
 
         clear_screen();
 
-        nrf_delay_ms(1000);
+        // nrf_delay_ms(1000);
+
+        set_screen_gradient();
+
+        // nrf_delay_ms(1000);
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
