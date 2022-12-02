@@ -49,10 +49,12 @@ int main(void)
         // neopixel_demo();
 
         float velocity = get_velocity();
-
+        printf("%d\n",(int)velocity);
+        nrf_delay_ms(500);
         // set the neopixels to the current velocity
         neopixel_driver_set_all(0, 0, 0);
-        neopixel_driver_set_range(0, 0, 20, 20, 20);
+        neopixel_driver_set_range(0, (int)(velocity), 20, 20, 20);
+        neopixel_driver_send();
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
