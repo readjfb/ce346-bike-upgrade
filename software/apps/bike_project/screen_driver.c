@@ -45,6 +45,10 @@ void set_screen_solid(void) {
     ssd1327_solid();
 }
 
+void set_screen_gradient(void) {
+    ssd1327_gradient();
+}
+
 // initialization
 void screen_init(void)
 {

@@ -33,3 +33,5 @@ void screen_init(void);
 void clear_screen(void);
 
 void set_screen_solid(void);
+
+void set_screen_gradient(void);

@@ -19,3 +19,7 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c);
 void ssd1327_clear(void);
 
 void ssd1327_solid(void);
+
+void ssd1327_normal(void);
+
+void ssd1327_gradient(void);
