@@ -88,7 +88,7 @@ static void send_1b_cmd(uint8_t cmd)
     // Send slave address with SA0=0 for command mode and R/W=0 for write
     // then send the control byte with Co=0 for command mode and D/C#=0 for data
     uint8_t data[2] = {0x00, cmd};
-    i2c_write(SSD1327_I2C_ADDR_CMD, data, 2);
+    i2c_write(SSD1327_I2C_ADDR_DATA, data, 2);
 }
 
 static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
@@ -98,8 +98,9 @@ static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
 
     // The external i2c address should be sent first, as 011110 SAO R/W with SAO=0 for command mode and R/W=0 for write
     // TODO: does this work?
-    uint8_t data[3] = {0x80, cmd0, cmd1};
-    i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
+    uint8_t data[3] = {0x00, cmd0, cmd1};
+    i2c_write(SSD1327_I2C_ADDR_DATA, data, 3);
+    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
 }
 
 // Initialize the SSD1327 display
@@ -116,6 +117,9 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     send_1b_cmd(0xAF);
     send_1b_cmd(0xA5);
 
+    // sleep for 100ms
+    nrf_delay_ms(100);
+    send_1b_cmd(0xA6);
 
     // Send the command 0xAF to turn on the display
     // send_1b_cmd(0xAF);

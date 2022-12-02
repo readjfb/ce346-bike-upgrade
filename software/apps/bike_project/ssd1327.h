@@ -4,9 +4,9 @@
 
 // Chip addresses for OLED_Display
 // 2b'0111100
-static const uint8_t SSD1327_I2C_ADDR_CMD = 0x3D;
+static const uint8_t SSD1327_I2C_ADDR_CMD = 0x3d;
 // 2b'0111101
-static const uint8_t SSD1327_I2C_ADDR_DATA = 0x3C;
+static const uint8_t SSD1327_I2C_ADDR_DATA = 0x3c;
 
 
 // Function prototypes

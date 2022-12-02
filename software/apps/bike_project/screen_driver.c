@@ -25,9 +25,11 @@ static void initialize_i2c(void) {
     // i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
     i2c_config.scl = EDGE_P19;
     i2c_config.sda = EDGE_P20;
-    i2c_config.frequency = NRF_TWIM_FREQ_400K;
+    i2c_config.frequency = NRF_TWIM_FREQ_100K;
     i2c_config.interrupt_priority = 0;
-    nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
+    ret_code_t result1 = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
+
+    printf("I2C init result: %d\n", result1);
 }
 
 static void initialize_display(const nrf_twi_mngr_t *i2c)
