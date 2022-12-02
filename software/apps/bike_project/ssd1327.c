@@ -117,18 +117,9 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     send_1b_cmd(0xAF);
     send_1b_cmd(0xA5);
 
-    // sleep for 100ms
-    nrf_delay_ms(100);
+    // sleep for 250ms, then turn screen off
+    nrf_delay_ms(250);
     send_1b_cmd(0xA6);
-
-    // Send the command 0xAF to turn on the display
-    // send_1b_cmd(0xAF);
-
-    // // Send the command 0xA4 to turn off the entire display
-    // send_1b_cmd(0xA4);
-
-    // // turn on the entire display
-    // send_1b_cmd(0xA5);
 
 
 }
