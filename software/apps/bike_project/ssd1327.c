@@ -11,43 +11,7 @@
 
 APP_TIMER_DEF(update_timer);
 
-static const nrf_twi_mngr_t *i2c_manager = NULL;
-
-// Helper function to perform a 1-byte I2C read of a given register
-//
-// i2c_addr - address of the device to read from
-// reg_addr - address of the register within the device to read
-//
-// returns 8-bit read value
-static uint8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr)
-{
-    uint8_t rx_buf = 0;
-    nrf_twi_mngr_transfer_t const read_transfer[] = {
-        // TODO: implement me
-        NRF_TWI_MNGR_WRITE(i2c_addr, &reg_addr, 1, NRF_TWI_MNGR_NO_STOP),
-
-        NRF_TWI_MNGR_READ(i2c_addr, &rx_buf, 1, 0)};
-    nrf_twi_mngr_perform(i2c_manager, NULL, read_transfer, 2, NULL);
-
-    return rx_buf;
-}
-
-// Helper function to perform a 1-byte I2C write of a given register
-//
-// i2c_addr - address of the device to write to
-// reg_addr - address of the register within the device to write
-static void i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t data) {
-    // TODO: implement me
-    // Note: there should only be a single two-byte transfer to be performed
-
-    uint8_t arr[2] = {reg_addr, data};
-
-    nrf_twi_mngr_transfer_t const write_transfer[] = {
-        NRF_TWI_MNGR_WRITE(i2c_addr, &arr, 2, 0)};
-
-
-    nrf_twi_mngr_perform(i2c_manager, NULL, write_transfer, 1, NULL);
-}
+static nrf_twi_mngr_t *i2c_manager = NULL;
 
 // Helper function to perform a 1-byte I2C write
 static void i2c_write(uint8_t i2c_addr, uint8_t *data, uint8_t len)
@@ -58,6 +22,9 @@ static void i2c_write(uint8_t i2c_addr, uint8_t *data, uint8_t len)
 
     if (result != NRF_SUCCESS) {
         printf("i2c_write failed: %d\n", result);
+    }
+    else {
+        printf("i2c_write succeeded\n");
     }
 }
 
@@ -82,27 +49,36 @@ static uint8_t format_first_byte(uint8_t i2c_addr, bool sa0, bool rw)
 
 static void send_1b_cmd(uint8_t cmd)
 {
-    // uint8_t first_byte = format_first_byte(SSD1327_I2C_ADDR, 0, 0);
-
-    // first_byte = SSD1327_I2C_ADDR;
-
-    // printf("I2C ADDR: %x\n", SSD1327_I2C_ADDR);
-
-    // // print first byte
-    // printf("first byte: %x\n", first_byte);
-
-    // first byte, command inducer (0x00), command
-
+    // Send slave address with SA0=0 for command mode and R/W=0 for write
+    // then send the control byte with Co=0 for command mode and D/C#=0 for data
     uint8_t data[2] = {0x00, cmd};
-    i2c_write(SSD1327_I2C_ADDR_CMD, data, 2);
+    i2c_write(SSD1327_I2C_ADDR_DATA, data, 2);
+    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 2); // We should be using the CMD but... nah
+
 }
 
 static void send_2b_cmd(uint8_t cmd0, uint8_t cmd1) {
-    // uint8_t first_byte = format_first_byte(SSD1327_I2C_ADDR, 0, 0);
+    // This sends a 2b command
+    // First sends the control byte (Co D/C# 00000) with Co=1 for continutation mode and D/C#=0 for command
+    // Then the command byte is sent
 
-    uint8_t data[4] = {0x00, cmd0, cmd1};
-    i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
+    // The external i2c address should be sent first, as 011110 SAO R/W with SAO=0 for command mode and R/W=0 for write
+    // TODO: does this work?
+    uint8_t data[3] = {0x00, cmd0, cmd1};
+    i2c_write(SSD1327_I2C_ADDR_DATA, data, 3);
+    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 3);
+}
 
+static void send_3b_cmd(uint8_t cmd0, uint8_t cmd1, uint8_t cmd2) {
+    // This sends a 3b command
+    // First sends the control byte (Co D/C# 00000) with Co=1 for continutation mode and D/C#=0 for command
+    // Then the command byte is sent
+
+    // The external i2c address should be sent first, as 011110 SAO R/W with SAO=0 for command mode and R/W=0 for write
+
+    uint8_t data[4] = {0x00, cmd0, cmd1, cmd2};
+    i2c_write(SSD1327_I2C_ADDR_DATA, data, 4);
+    // i2c_write(SSD1327_I2C_ADDR_CMD, data, 4);
 }
 
 // Initialize the SSD1327 display
@@ -119,15 +95,30 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     send_1b_cmd(0xAF);
     send_1b_cmd(0xA5);
 
+    // sleep for 250ms, then turn screen off
+    nrf_delay_ms(250);
+    send_1b_cmd(0xA6);
 
-    // Send the command 0xAF to turn on the display
-    // send_1b_cmd(0xAF);
+    // send_2b_cmd(0xFD, 0x12);    // Unlock controller
+    // send_1b_cmd(0xA4);          // Set entire display off
+    // send_2b_cmd(0xb3, 0x91);    // Set display clock divide ratio/oscillator frequency
+    // send_2b_cmd(0xca, 0x3f);    // Set multiplex ratio
+    // send_2b_cmd(0xa2, 0x00);    // Set display offset
+    // send_2b_cmd(0xa1, 0x00);    // Set display start line
+    // send_3b_cmd(0xa0, 0x14, 0x11);// Set remap and data format
+    // send_2b_cmd(0xb5, 0x00);    // Set GPIO
+    // send_2b_cmd(0xb1, 0xe2);     // Set phase length
+    // send_2b_cmd(0xd1, 0x82);    // Set display enhancement A
+    // send_1b_cmd(0xa6);           // Set normal display mode
+}
 
-    // // Send the command 0xA4 to turn off the entire display
-    // send_1b_cmd(0xA4);
+void ssd1327_clear(void) {
+    // turns off all pixels
+    send_1b_cmd(0xA6);
+}
 
-    // // turn on the entire display
-    // send_1b_cmd(0xA5);
-
-
+void ssd1327_solid(void)
+{
+    // turns on the display
+    send_1b_cmd(0xA5);
 }

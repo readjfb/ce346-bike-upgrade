@@ -240,3 +240,24 @@ void neopixel_driver_set_range_nonclusive(uint8_t start, uint8_t end, uint8_t re
         neopixel_driver_set_led(i, red, green, blue);
     }
 }
+
+// create a function to set the RGB values for all LEDs to a single color, the speed of setting increasing based on input speed
+// note that speed should be inverted, so a higher speed value will result in a slower change in LEDs with the current implementation
+void neopixel_driver_set_all_speed(uint8_t red, uint8_t green, uint8_t blue, uint8_t speed) {
+    for (int i = 0; i < NEOPIXEL_DRIVER_NUM_LEDS; i++) {
+        // create a fade effect by turning off the LED speed indices ago
+        for (int j = 1; j < speed; j++) {
+            if (i-j >= 0) {
+                neopixel_driver_red[i - j] = red / j;
+                neopixel_driver_green[i - j] = green / j;
+                neopixel_driver_blue[i - j] = blue / j;
+            }
+        }
+
+        neopixel_driver_red[i] = red;
+        neopixel_driver_green[i] = green;
+        neopixel_driver_blue[i] = blue;
+        neopixel_driver_send();
+        nrf_delay_ms(speed);
+    }
+}

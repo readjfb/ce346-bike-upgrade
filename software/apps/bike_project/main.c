@@ -13,7 +13,8 @@
 
 #include "neopixel_driver.h"
 
-// #include "screen_driver.h"
+#include "screen_driver.h"
+
 
 #include "basic_timing.h"
 
@@ -42,11 +43,10 @@ int main(void)
 
     printf("Neopixels Done!\n");
 
-    // screen_init();
+    // SCREEN INITIALIZATION STARTS HERE
+    screen_init();
 
     while (1) {
-        // Do nothing.
-        // neopixel_demo();
 
         float velocity = get_velocity();
         printf("%d\n",(int)velocity);
@@ -55,6 +55,16 @@ int main(void)
         neopixel_driver_set_all(0, 0, 0);
         neopixel_driver_set_range(0, (int)(velocity), 20, 20, 20);
         neopixel_driver_send();
+
+        //neopixel_demo();
+
+        set_screen_solid();
+
+        nrf_delay_ms(1000);
+
+        clear_screen();
+
+        nrf_delay_ms(1000);
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
