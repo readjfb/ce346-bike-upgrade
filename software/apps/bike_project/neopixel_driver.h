@@ -35,3 +35,10 @@ void neopixel_driver_send(void);
 
 // Sets color for a range of consecutive LEDs (inclusive)
 void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue);
+
+// Sets color for a range, different colors depending on position
+void neopixel_driver_set_color_range(uint8_t end);
+
+// Sets color for a range of consecutive LEDs (noninclusive)
+void neopixel_driver_set_range_nonclusive(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue);
+

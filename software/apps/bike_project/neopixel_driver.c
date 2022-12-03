@@ -170,6 +170,39 @@ void neopixel_driver_send(void) {
     return;
 }
 
+// Function for Neopixel UI
+// changes made: if start = end, do nothing
+// set pixels 0-7 green
+// set pixels 15-8 orange
+// set pixels 23-16 red
+// instead of clearing old ones, set white
+void neopixel_driver_set_color_range(uint8_t end) {
+    if (end > NEOPIXEL_DRIVER_NUM_LEDS) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: end > NEOPIXEL_DRIVER_NUM_LEDS\n");
+    }
+    if (0 == end) {
+        return;
+    }
+
+    for (int i = 0; i <= end; i++) {
+        // all green
+        if (i < 8)
+        {
+            neopixel_driver_set_led(i, 0, 80, 0);
+        }
+        // orange
+        else if (i < 16)
+        {
+            neopixel_driver_set_led(i, 80, 40, 0);
+        }
+        // all red
+        else 
+        {
+            neopixel_driver_set_led(i, 80, 0, 0);
+        }
+    }
+}
+
 void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue) {
     if (start > end) {
         printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start > end\n");
@@ -185,10 +218,25 @@ void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t 
     for (int i = start; i <= end; i++) {
         neopixel_driver_set_led(i, red, green, blue);
     }
+}
 
-    for (int i = start; i < end; i++) {
-        neopixel_driver_red[i] = red;
-        neopixel_driver_green[i] = green;
-        neopixel_driver_blue[i] = blue;
+void neopixel_driver_set_range_nonclusive(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue) {
+    if (start > end) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start > end\n");
+        return;
+    }
+    if (start < 0) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start < 0\n");
+    }
+    if (end > NEOPIXEL_DRIVER_NUM_LEDS) {
+        printf("ERROR IN NEOPIXEL DRIVER SETRANGE: end > NEOPIXEL_DRIVER_NUM_LEDS\n");
+    }
+    if (start == end)
+    {
+        return;
+    }
+
+    for (int i = start; i <= end; i++) {
+        neopixel_driver_set_led(i, red, green, blue);
     }
 }
