@@ -432,8 +432,7 @@ void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, char c)
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 5; j++) {
             // set back buffer to pixels[i][j] << 4 + pixels[i][j+1]
-                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4 + pixels[j*2+1][i];
-
+                ucBackBuffer[i * 64 + j] = (pixels[j*2][i] << 4) + pixels[j*2+1][i];
         }
     }
 
