@@ -47,7 +47,7 @@ int main(void)
 
     // SCREEN INITIALIZATION STARTS HERE
     screen_init();
-
+    clear_screen();
     while (1) {
         neopixel_demo();
 
@@ -55,13 +55,16 @@ int main(void)
 
         // nrf_delay_ms(1000);
 
-        clear_screen();
+        //clear_screen();
 
         // nrf_delay_ms(1000);
 
-        set_screen_gradient();
+        //set_screen_gradient();
 
-        // nrf_delay_ms(1000);
+        ssd1327_draw_14x10_char(0, 0, 'j');
+        // ssd1327_draw_14x10_char(25, 25, '13');
+
+        nrf_delay_ms(1000);
     }
 
     // python -m serial.tools.miniterm /dev/cu.usbmodem0007820214021 38400
