@@ -391,7 +391,7 @@ uint8_t number_9[10][14] = {{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}};
 
 // create the char : using uint8_t array
-uint8_t char_:[10][14] =   {{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
+uint8_t char_colon[10][14] =   {{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
@@ -406,19 +406,23 @@ uint8_t char_:[10][14] =   {{0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0},
                             {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}};
 
+// store an array of number_0 to number_9
+const uint8_t nums_font[][10][14] = {number_0, number_1, number_2, number_3, number_4, number_5, number_6, number_7, number_8, number_9};
 
-const uint8_t 10x14font[][10][14];
-// turn aa_font into an array of 10x14 bitmaps for each letter
-for (int i = 0; i < len(aa_font); i++) {
-    for (int j = 0; j < 35; j++) {
-        uint8_t byte = aa_font[i][j];
-        uint8_t first = byte >> 4;
-        uint8_t second = byte & 0x0f;
-        // work on actual mapping in future
-        10x14font[i][j/2][j%2] = first;
-        10x14font[i][j/2][j%2+1] = second;
-    }
-}
+// store an array of letter s, p, e, d, m, h, and char :
+const uint8_t letters_font[][10][14] = {letter_s, letter_p, letter_e, letter_d, letter_m, letter_h, char_colon};
+
+// // turn aa_font into an array of 10x14 bitmaps for each letter
+// for (int i = 0; i < len(aa_font); i++) {
+//     for (int j = 0; j < 35; j++) {
+//         uint8_t byte = aa_font[i][j];
+//         uint8_t first = byte >> 4;
+//         uint8_t second = byte & 0x0f;
+//         // work on actual mapping in future
+//         10x14font[i][j/2][j%2] = first;
+//         10x14font[i][j/2][j%2+1] = second;
+//     }
+// }
 
 
 static void set_row(uint8_t row_num) {
@@ -765,3 +769,35 @@ void ssd1327_draw_14x10_string(uint8_t x, uint8_t y, char *string)
     }
 
 }
+
+void collect_digits(uint8_t[] digits, uint8_t num) {
+    if (num > 9) {
+        collect_digits(digits, num / 10);
+    }
+    digits.push_back(num % 10);
+}
+
+// create a function that draws a 14x10 number based on input index
+// 1-2 digit numbers only
+void ssd1327_draw_14x10_number(uint8_t x, uint8_t y, uint8_t number)
+{
+    ssd1327set_position(0, 0, 128, 128);
+    uint8_t digits[]; // array of digits
+    collect_digits(digits, number);
+
+    for (int dig_index = 0; i<len(digits); i++) {
+        // pixel 10x14 of intended number
+        uint8_t pixels[10][14] = nums_font[digits[dig_index]];
+
+        // set 10x14 pixels to intended number
+        for (int i = x + 14*dig_index; i < 14 + 14*dig_index; i++) {
+            for (int j = y; j < 5+y; j++) {
+                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+            }
+        }
+
+        // send data in blocks of 32 bytes
+        total_screen_refresh();
+    }
+}
+
