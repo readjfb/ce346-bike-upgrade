@@ -412,6 +412,12 @@ const uint8_t nums_font[][10][14] = {number_0, number_1, number_2, number_3, num
 // store an array of letter s, p, e, d, m, h, and char :
 const uint8_t letters_font[][10][14] = {letter_s, letter_p, letter_e, letter_d, letter_m, letter_h, char_colon};
 
+// store an array of letters m, p, and h
+const uint8_t letters_mph[][10][14] = {letter_m, letter_p, letter_h};
+
+// store an array of speed:
+const uint8_t letters_speed[][10][14] = {letter_s, letter_p, letter_e, letter_e, letter_d, char_colon};
+
 // // turn aa_font into an array of 10x14 bitmaps for each letter
 // for (int i = 0; i < len(aa_font); i++) {
 //     for (int j = 0; j < 35; j++) {
@@ -801,3 +807,51 @@ void ssd1327_draw_14x10_number(uint8_t x, uint8_t y, uint8_t number)
     }
 }
 
+// draw number with mph label and speed below
+void ssd1327_draw_speed(uint8_t x, uint8_t y, uint8_t speed)
+{
+    ssd1327set_position(0, 0, 128, 128);
+    uint8_t digits[]; // array of digits
+    collect_digits(digits, speed);
+
+    for (int dig_index = 0; dig_index<len(digits); dig_index++) {
+        // pixel 10x14 of intended number
+        uint8_t pixels[10][14] = nums_font[digits[dig_index]];
+
+        // set 10x14 pixels to intended number
+        for (int i = x + 14*dig_index; i < 14 + 14*dig_index; i++) {
+            for (int j = y; j < 5+y; j++) {
+                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+            }
+        }
+    }
+
+    // draw mph label
+    for (int mph_index = 0; mph_index<len(letters_mph); mph_index++) {
+        // pixel 10x14 of intended number
+        uint8_t pixels[10][14] = letters_mph[mph_index];
+
+        // set 10x14 pixels to intended letter
+        for (int i = x + 14*mph_index; i < 14 + 14*mph_index; i++) {
+            for (int j = y; j < 5+y; j++) {
+                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+            }
+        }
+    }
+
+    // draw speed below
+    for (int speed_index = 0; speed_index<len(letters_speed); speed_index++) {
+        // pixel 10x14 of intended number
+        uint8_t pixels[10][14] = letters_speed[speed_index];
+
+        // set 10x14 pixels to intended letter
+        for (int i = x + 14*speed_index; i < 14 + 14*speed_index; i++) {
+            for (int j = y+10; j < 5+y+10; j++) {
+                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+            }
+        }s
+    }
+
+    // send data in blocks of 32 bytes
+    total_screen_refresh();
+}
