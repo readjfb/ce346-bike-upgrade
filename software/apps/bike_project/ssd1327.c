@@ -362,97 +362,59 @@ void ssd1327_gradient(void)
 void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, char c)
 {
     ssd1327set_position(0, 0, 128, 128);
-    uint8_t *char_j = {0xf0, 0x05, 0x00, 0xfa, 0x00, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0x00, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0x00, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0xff, 0xaf, 0xfa, 0xaa, 0xaa, 0xaa, 0xa5, 0x55, 0x55, 0x55}; // E
-    // uint8_t *char_j = {0xff, 0xff, 0xff, 0xff, 0xff, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0x00, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0x00, 0xa0, 0x0a, 0xa0, 0x0a, 0x00, 0xaa, 0xff, 0xaf, 0xfa, 0xaa, 0xaa, 0xaa, 0xa5, 0x55, 0x55, 0x55};
-
-    //     // c -= 32;
-    //     // // set 10x14 pixels to intended character
-    //     // uint8_t ty, tx, index;
-    //     // // uint8_t *p = (uint8_t *)&aa_font[(uint8_t)c];
-
-    //     // for (ty = 0; ty < 14; ty++)
-    //     // {
-    //     //     for (tx = 0; tx < 5; tx++) // 5 output bytes per line
-    //     //     {
-    //     //         ucBackBuffer[tx + (128 * ty)] = char_j[tx + (ty * 10)];
-    //     //     }
-    //     // }
+    uint8_t char_j[35] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff}; //E
 
     //     // make a 10x14 block of pixels
-    uint8_t pixels[10][14];
+    uint8_t pixels[10][14] = {{0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF},{0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF},{0xF,0xF,0,0,0xF,0xF,0,0,0xF,0xF}};
 
-    // put fc in all pixels
+    // int i = 0;
 
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     for (int j = 0; j < 14; j++)
-    //     {
-    //         pixels[i][j] = 0xff;
+    // while (i < 140) {
+    //     // get the refrenced_byte
+    //     uint8_t refrenced_byte = char_j[i/4];
+
+    //     // get the bit index
+    //     uint8_t bit_index = i % 4;
+
+    //     // get the two bits
+
+    //     uint8_t bits = (refrenced_byte >> (bit_index * 2)) & 0x03;
+
+    //     // set the pixel
+    //     switch (bits) {
+    //         case 0:
+    //             printf("0");
+    //             pixels[i % 10][i / 10] = 0x00;
+    //             break;
+    //         case 1:
+    //             printf("1");
+    //             pixels[i % 10][i / 10] = 0x05;
+    //             break;
+    //         case 2:
+    //             printf("2");
+    //             pixels[i % 10][i / 10] = 0x0A;
+    //             break;
+    //         case 3:
+    //             printf("2");
+    //             pixels[i % 10][i / 10] = 0x0F;
+    //             break;
     //     }
-    // }
-    //     // cycle through the char array
-    int i = 0;
-
-    while (i < 140) {
-        // get the refrenced_byte
-        uint8_t refrenced_byte = char_j[i/4];
-
-        // get the bit index
-        uint8_t bit_index = i % 4;
-
-        // get the two bits
-
-        uint8_t bits = (refrenced_byte >> (bit_index * 2)) & 0x03;
-
-        // set the pixel
-        switch (bits) {
-            case 0:
-                pixels[i % 10][i / 10] = 0x00;
-                break;
-            case 1:
-                pixels[i % 10][i / 10] = 0x05;
-                break;
-            case 2:
-                pixels[i % 10][i / 10] = 0x0A;
-                break;
-            case 3:
-                pixels[i % 10][i / 10] = 0x0F;
-                break;
-        }
-        i=i+1;
-    }
-
-    // for (int i = 0; i < 10; i++) {
-    //     for (int j = 0; j < 14; j=j+2) {
-    //         // set back buffer to pixels[i][j] << 4 + pixels[i][j+1]
-    //         ucBackBuffer[i*64+j/2] = pixels[i][j] << 4 + pixels[i][j+1];
-    //     }
+    //     i=i+1;
     // }
 
     for (int i = 0; i < 14; i++) {
         for (int j = 0; j < 5; j++) {
             // set back buffer to pixels[i][j] << 4 + pixels[i][j+1]
-                ucBackBuffer[i * 64 + j] = (pixels[j*2][i] << 4) + pixels[j*2+1][i];
+                // ucBackBuffer[i * 64 + j] = (pixels[j*2][i] << 4) + pixels[j*2+1][i];
+                //printf("Second pixel: %x\n",pixels[j*2+1][i]);
+                // ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+                
+                ucBackBuffer[i * 64 + j] = pixels[j*2][i] << 4| pixels[j*2+1][i];
+                // ucBackBuffer[i * 64 + j] = 0xFF;
+
+
         }
     }
-
-
-
-    // Set the buffer, knowing that there are two pixels per byte
-    // for (int i=0; i<8192; i++) {
-    //     // Iterate through the pixels, by row
-    //     ucBackBuffer[i] = 0xAA;
-    // }
-
-    //update the corner of the back buffer with the j pixels
-    // for (int i = 20; i < 30; i++)
-    // {
-    //     for (int j = 50; j < 64; j++)
-    //     {
-    //         ucBackBuffer[i *64 + j] = 0xFF;
-    //     }
-    // }
-
 
     // send data in blocks of 32 bytes
     total_screen_refresh();

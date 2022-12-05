@@ -49,9 +49,9 @@ int main(void)
     screen_init();
     clear_screen();
     while (1) {
-        neopixel_demo();
+        //neopixel_demo();
 
-        // set_screen_solid();
+        //set_screen_solid();
 
         // nrf_delay_ms(1000);
 
