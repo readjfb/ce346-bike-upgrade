@@ -12,8 +12,12 @@
 #include "microbit_v2.h"
 #include "neopixel_driver.h"
 #include "screen_driver.h"
+#include "basic_timing.h"
+#include "gpio.h"
 
 static int step = 0;
+
+// static int max_vel = 0;
 
 static void neopixel_demo(void)
 {
@@ -44,26 +48,43 @@ int main(void)
     neopixel_driver_init();
 
     printf("Neopixels Done!\n");
+    // Neopixel demo happens once
 
     // SCREEN INITIALIZATION STARTS HERE
     screen_init();
     clear_screen();
+
+    // Hall init
+    timing_init();
+
+    // Button init
+    gpio_config(14,0);
+    int distance = 0;
     while (1) {
+        float vel = get_velocity()*2;
+        uint8_t velocity = (uint8_t)vel;
+     
+
+        neopixel_driver_set_all(0, 0, 0);
+        neopixel_driver_set_color_range((int)(velocity*1.5)%24);
+        neopixel_driver_send();
+
+        // if (max_vel < (int)(velocity*1.5)%24) {
+        //     max_vel = (int)(velocity*1.5)%24;
+        // }
+    
         //neopixel_demo();
 
-        //set_screen_solid();
+        // draw the entire screen
+        ssd1327_draw_14x10_char(0, 0, velocity, distance);
 
-        // nrf_delay_ms(1000);
-
-        //clear_screen();
-
-        // nrf_delay_ms(1000);
-
-        //set_screen_gradient();
-
-        ssd1327_draw_14x10_char(0, 0, 'j');
-        // ssd1327_draw_14x10_char(25, 25, '13');
-
+        // increment the distance
+        distance += velocity;
+        if (!(gpio_read(14))) 
+        { // Button A is pressed -> turn light on
+	        distance=0;
+            //max_vel=0;
+        }	 
         nrf_delay_ms(1000);
     }
 
