@@ -17,7 +17,7 @@ static uint8_t ucBackBuffer[8192] = {0};
 
 uint8_t digits[]; // array of digits
 
-// pixel 10x14 of the letter E
+// pixel 10x14 of the letter E (unused)
 uint8_t pixel[] = { 0xf0,0x05,0x00,0xfa,0x00,
                     0xa0,0x0a,0xa0,0x0a,0x00,
                     0xaa,0x00,0xa0,0x0a,0xa0,
@@ -26,6 +26,9 @@ uint8_t pixel[] = { 0xf0,0x05,0x00,0xfa,0x00,
                     0xff,0xaf,0xfa,0xaa,0xaa,
                     0xaa,0xa5,0x55,0x55,0x55}; // E
 
+
+
+// font libraries
 const uint8_t nums_font[10][10][14] = {
     
                            {{0x0,0x0,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0x0,0x0},
@@ -335,6 +338,7 @@ const uint8_t letters_speed[6][10][14] = {
 
 
 // store an array of dist
+// only display dist: don't use other letters
 const uint8_t letters_dist[8][10][14] = {
                            {{0x0,0x0,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0x0,0x0},
                             {0x0,0x0,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0xF,0x0,0x0},
@@ -402,19 +406,6 @@ const uint8_t letters_dist[8][10][14] = {
                             
                             
                             };
-
-// // turn aa_font into an array of 10x14 bitmaps for each letter
-// for (int i = 0; i < len(aa_font); i++) {
-//     for (int j = 0; j < 35; j++) {
-//         uint8_t byte = aa_font[i][j];
-//         uint8_t first = byte >> 4;
-//         uint8_t second = byte & 0x0f;
-//         // work on actual mapping in future
-//         10x14font[i][j/2][j%2] = first;
-//         10x14font[i][j/2][j%2+1] = second;
-//     }
-// }
-
 
 static void set_row(uint8_t row_num) {
     uint8_t ucCommand[2] = {0x75, 0x00, row_num};
@@ -592,6 +583,7 @@ void ssd1327_init(const nrf_twi_mngr_t *i2c)
     // send_1b_cmd(0xa6);           // Set normal display mode
 }
 
+// redraw the entire screen according to the buffer
 static void total_screen_refresh(void)
 {
     ssd1327set_position(0, 0, 128, 128);
@@ -656,6 +648,7 @@ void ssd1327_gradient(void)
     total_screen_refresh();
 }
 
+// this function updates all parts of the screen, including speed and distance 
 void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, uint8_t num, int dist)
 {
     // ssd1327set_position(0, 0, 128, 128);
@@ -859,6 +852,7 @@ void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, uint8_t num, int dist)
     total_screen_refresh();
 }
 
+// draws a string (unimplemented)
 // void ssd1327_draw_14x10_string(uint8_t x, uint8_t y, char *string)
 // {
 //     ssd1327set_position(0, 0, 128, 128);
@@ -923,7 +917,7 @@ void ssd1327_draw_14x10_number(uint8_t x, uint8_t y, uint8_t number)
     total_screen_refresh();
 }
 
-// draw number with mph label and speed below
+// draw number with mph label and speed below (unused)
 void ssd1327_draw_speed(uint8_t x, uint8_t y, uint8_t speed)
 {
     ssd1327set_position(0, 0, 128, 128);
