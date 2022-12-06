@@ -171,29 +171,15 @@ void neopixel_driver_send(void) {
 }
 
 // Function for Neopixel UI
-// changes made: if start = end, do nothing
+// Display relative speed on neopixel
 // set pixels 0-7 green
 // set pixels 15-8 orange
 // set pixels 23-16 red
-// instead of clearing old ones, set white
+// instead of clearing old ones, set white to show max velocity for the session
 void neopixel_driver_set_color_range(uint8_t end) {
     if (end > NEOPIXEL_DRIVER_NUM_LEDS) {
         printf("ERROR IN NEOPIXEL DRIVER SETRANGE: end > NEOPIXEL_DRIVER_NUM_LEDS\n");
     }
-    // if (0 == end & 0 == max)
-    // {
-    //     return;
-    // }
-    // if (0 == end) {
-    //     if (max > end)
-    //     {
-    //         for (int i =0;i <= max;i++)
-    //         {
-    //             neopixel_driver_set_led(i, 10, 10,10);
-    //         }
-    //     }
-    //     return;
-    // }
 
     for (int i = 0; i < end; i++) {
         // all green
@@ -212,6 +198,7 @@ void neopixel_driver_set_color_range(uint8_t end) {
             neopixel_driver_set_led(i, 0, 0,200);
         }
     }
+    // Max velocity is currently unimplemented
     // if (max > end)
     // {
     //     for (int i =end+1;i <= max;i++)
@@ -221,6 +208,7 @@ void neopixel_driver_set_color_range(uint8_t end) {
     // }
 }
 
+// Set a range of pixels to the same value
 void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue) {
     if (start > end) {
         printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start > end\n");
@@ -238,6 +226,7 @@ void neopixel_driver_set_range(uint8_t start, uint8_t end, uint8_t red, uint8_t 
     }
 }
 
+// helper function to set the LEDs, noninclusive
 void neopixel_driver_set_range_nonclusive(uint8_t start, uint8_t end, uint8_t red, uint8_t green, uint8_t blue) {
     if (start > end) {
         printf("ERROR IN NEOPIXEL DRIVER SETRANGE: start > end\n");

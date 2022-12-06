@@ -18,8 +18,10 @@
 
 APP_TIMER_DEF(update_timer);
 
+// Counter to keep track of pulses within the interval
 static float revolutions_since_last = 0;
 
+// Buffer to hold recent velocity values that are used to calculate velocity
 static float velocity_buffer[VELOCITY_QUEUE_SIZE] = {0};
 static int velocity_buffer_index = 0;
 static float velocity_buffer_sum = 0;

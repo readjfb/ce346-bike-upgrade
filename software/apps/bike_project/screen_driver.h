@@ -30,8 +30,11 @@ static void initialize_display(const nrf_twi_mngr_t *i2c);
 // initialization
 void screen_init(void);
 
+// set entire screen to off
 void clear_screen(void);
 
+// set screen to all on
 void set_screen_solid(void);
 
+// set screen to a gradient for testing
 void set_screen_gradient(void);

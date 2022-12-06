@@ -24,4 +24,9 @@ void ssd1327_normal(void);
 
 void ssd1327_gradient(void);
 
-void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, char c);
+void ssd1327_draw_14x10_char(uint8_t x, uint8_t y, uint8_t num, int dist);
+
+void ssd1327_draw_speed(uint8_t x, uint8_t y, uint8_t speed);
+
+void ssd1327_draw_14x10_number(uint8_t x, uint8_t y, uint8_t number);
+

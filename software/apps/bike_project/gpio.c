@@ -1,6 +1,10 @@
 #include "gpio.h"
 #include <stdio.h>
 
+// FOR BUTTON A TO RESET distance
+
+
+
 typedef struct{
   // Step 3:
   uint32_t blank[321];
@@ -46,7 +50,6 @@ void gpio_set(uint8_t gpio_num) {
   }
 }
 
-// Didn't use bitmask but still works
 // Inputs: 
 //  gpio_num - gpio number 0-31 OR (32 + gpio number)
 void gpio_clear(uint8_t gpio_num) {
@@ -73,10 +76,4 @@ bool gpio_read(uint8_t gpio_num) {
 
 // prints out some information about the GPIO driver. Can be called from main()
 void gpio_print(void) {
-  //printf("%p\n",&(port1->DIR));
-  //printf("%p\n",&(port0->PIN_CNF[0]));
-  //printf("%lx\n",port0->PIN_CNF[14]);
-  //printf("%lx\n",port0->IN);
-  // use this function for debugging purposes
-  // you don't otherwise have to write anything here
 }
