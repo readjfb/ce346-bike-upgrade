@@ -1,6 +1,8 @@
-# Northwestern Micro:bit v2 Base
+# Smart Bike | Northwestern Micro:bit v2 Base
+### By Jackson Bremen, Evan Waite, Sengdao Inthavong
 
-Starter code for Northwestern course CE346 based on Micro:bit v2.
+
+We created an embedded system to track a rider’s performance on a bike using a Micro:bit and modern sensors.
 
 This repository has applications and board initialization that connects to the
 build system provided by [nrf52x-base](https://github.com/lab11/nrf52x-base).
